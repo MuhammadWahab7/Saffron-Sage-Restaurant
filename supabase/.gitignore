@@ -1,0 +1,14 @@
+# Supabase
+.branches
+.temp
+
+# dotenvx
+.env.keys
+.env.local
+.env.*.local
+signing_keys.json
+*.pem
+*.key
+
+# Generated local CLI configuration. Production schema is maintained in setup.sql.
+config.toml
