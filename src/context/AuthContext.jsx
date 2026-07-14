@@ -10,6 +10,7 @@ const configurationError =
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [passwordRecovery, setPasswordRecovery] = useState(false);
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
@@ -26,9 +27,10 @@ export function AuthProvider({ children }) {
       setLoading(false);
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       setLoading(false);
+      if (event === "PASSWORD_RECOVERY") setPasswordRecovery(true);
     });
 
     return () => {
@@ -93,6 +95,24 @@ export function AuthProvider({ children }) {
     [requireSupabase],
   );
 
+  const completePasswordRecovery = useCallback(
+    async (password) => {
+      requireSupabase();
+      if (password.length < 8) {
+        throw new Error("Use at least 8 characters for your new password.");
+      }
+
+      const { data, error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+      return data.user;
+    },
+    [requireSupabase],
+  );
+
+  const dismissPasswordRecovery = useCallback(() => {
+    setPasswordRecovery(false);
+  }, []);
+
   const value = useMemo(
     () => ({
       user,
@@ -101,11 +121,24 @@ export function AuthProvider({ children }) {
       signIn,
       signOut,
       resetPassword,
+      completePasswordRecovery,
+      dismissPasswordRecovery,
+      passwordRecovery,
       authMode: isSupabaseConfigured ? "supabase" : "unconfigured",
       isLiveAuth: isSupabaseConfigured,
       configurationError,
     }),
-    [user, loading, signUp, signIn, signOut, resetPassword],
+    [
+      user,
+      loading,
+      signUp,
+      signIn,
+      signOut,
+      resetPassword,
+      completePasswordRecovery,
+      dismissPasswordRecovery,
+      passwordRecovery,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
