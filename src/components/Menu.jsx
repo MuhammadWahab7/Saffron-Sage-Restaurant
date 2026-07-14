@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { menuItems } from "../data";
+import ActionArrow from "./ActionArrow";
 import SectionHeading from "./SectionHeading";
 import MenuDetailModal from "./MenuDetailModal";
 
@@ -143,7 +144,7 @@ export default function Menu({ onReserve }) {
                     <div className="menu-card__image-wrap">
                       <img src={item.image} alt={item.name} className="menu-card__image" />
                       <span>{item.category}</span>
-                      <div className="menu-card__reveal">View details <b>↗</b></div>
+                      <div className="menu-card__reveal">View details <ActionArrow /></div>
                     </div>
                     <div className="menu-card__content">
                       <div>

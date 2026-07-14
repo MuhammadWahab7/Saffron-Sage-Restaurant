@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { galleryImages } from "../data";
+import ActionArrow from "./ActionArrow";
 import SectionHeading from "./SectionHeading";
 
 export default function Gallery() {
@@ -32,7 +33,7 @@ export default function Gallery() {
               aria-label={`Open image: ${image.alt}`}
             >
               <img src={image.src} alt={image.alt} />
-              <span>View image ↗</span>
+              <span>View image <ActionArrow /></span>
             </button>
           ))}
         </div>

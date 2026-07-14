@@ -1,3 +1,4 @@
+import ActionArrow from "./ActionArrow";
 import SectionHeading from "./SectionHeading";
 
 const hours = [
@@ -34,7 +35,7 @@ export default function Visit({ onBook }) {
           </div>
 
           <button className="button button--dark" onClick={onBook}>
-            Book a table <span>↗</span>
+            Book a table <ActionArrow />
           </button>
         </div>
 

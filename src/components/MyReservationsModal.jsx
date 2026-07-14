@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { getUserDisplayName, useAuth } from "../context/AuthContext";
 import { cancelReservation, listMyReservations } from "../services/reservations";
+import ActionArrow from "./ActionArrow";
 
 const formatDate = (value) => {
   if (!value) return "Date pending";
@@ -93,7 +94,7 @@ export default function MyReservationsModal({ open, onClose, onBook }) {
             <strong>{bookings.filter((booking) => booking.status !== "cancelled").length}</strong>
             <span>active reservations</span>
           </div>
-          <button className="button button--dark" onClick={() => { onClose(); onBook(); }}>Reserve another table <span>↗</span></button>
+          <button className="button button--dark" onClick={() => { onClose(); onBook(); }}>Reserve another table <ActionArrow /></button>
         </div>
 
         {error && <p className="form-error" role="alert">{error}</p>}

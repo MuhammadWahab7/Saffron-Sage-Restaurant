@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import ActionArrow from "./ActionArrow";
 
 export default function MenuDetailModal({ item, isFavourite, onToggleFavourite, onClose, onReserve }) {
   useEffect(() => {
@@ -112,7 +113,7 @@ export default function MenuDetailModal({ item, isFavourite, onToggleFavourite, 
 
           <div className="dish-modal__actions">
             <button className="button button--dark" onClick={() => onReserve(item)}>
-              Reserve with this dish <span>↗</span>
+              Reserve with this dish <ActionArrow />
             </button>
             <button className="dish-modal__secondary" onClick={() => onToggleFavourite(item.id)}>
               {isFavourite ? "♥ Saved to favourites" : "♡ Save for later"}

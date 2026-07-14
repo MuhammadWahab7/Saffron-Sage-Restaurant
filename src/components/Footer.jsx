@@ -1,3 +1,5 @@
+import ActionArrow from "./ActionArrow";
+
 export default function Footer({ onBook }) {
   const year = new Date().getFullYear();
 
@@ -14,7 +16,7 @@ export default function Footer({ onBook }) {
           </a>
           <h2>Good food. Friendly service.</h2>
           <button className="button" onClick={onBook}>
-            Reserve a table <span>↗</span>
+            Reserve a table <ActionArrow />
           </button>
         </div>
 
@@ -36,10 +38,10 @@ export default function Footer({ onBook }) {
           <div>
             <span>Follow</span>
             <a href="https://www.instagram.com/" target="_blank" rel="noreferrer">
-              Instagram ↗
+              Instagram <ActionArrow />
             </a>
             <a href="https://www.facebook.com/" target="_blank" rel="noreferrer">
-              Facebook ↗
+              Facebook <ActionArrow />
             </a>
           </div>
         </div>
@@ -48,7 +50,7 @@ export default function Footer({ onBook }) {
       <div className="container footer__bottom">
         <span>© {year} Saffron & Sage</span>
         <span>Fresh food in a relaxed setting</span>
-        <a href="#home">Back to top ↑</a>
+        <a href="#home">Back to top <ActionArrow direction="up" /></a>
       </div>
     </footer>
   );

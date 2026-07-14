@@ -1,3 +1,5 @@
+import ActionArrow from "./ActionArrow";
+
 export default function Hero({ onBook }) {
   const scrollToMenu = () =>
     document.getElementById("menu")?.scrollIntoView({ behavior: "smooth" });
@@ -19,10 +21,10 @@ export default function Hero({ onBook }) {
         </p>
         <div className="hero__actions">
           <button className="button" onClick={onBook}>
-            Reserve your table <span>↗</span>
+            Reserve your table <ActionArrow />
           </button>
           <button className="text-button" onClick={scrollToMenu}>
-            Discover the menu <span>↓</span>
+            Discover the menu <ActionArrow direction="down" />
           </button>
         </div>
       </div>

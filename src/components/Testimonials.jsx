@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { testimonials } from "../data";
+import ActionArrow from "./ActionArrow";
 
 export default function Testimonials() {
   const [active, setActive] = useState(0);
@@ -50,7 +51,7 @@ export default function Testimonials() {
             }
             aria-label="Next testimonial"
           >
-            →
+            <ActionArrow direction="right" />
           </button>
         </div>
       </div>

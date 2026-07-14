@@ -1,3 +1,4 @@
+import ActionArrow from "./ActionArrow";
 import SectionHeading from "./SectionHeading";
 
 export default function Story({ onBook }) {
@@ -45,7 +46,7 @@ export default function Story({ onBook }) {
           </div>
 
           <button className="button button--dark" onClick={onBook}>
-            Dine with us <span>↗</span>
+            Dine with us <ActionArrow />
           </button>
         </div>
       </div>

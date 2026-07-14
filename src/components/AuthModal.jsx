@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import ActionArrow from "./ActionArrow";
 
 const initialValues = {
   name: "",
@@ -238,7 +239,7 @@ export default function AuthModal({ open, onClose, onAuthenticated, purpose = "a
                     : purpose === "booking"
                       ? "Sign in & continue"
                       : "Sign in"}
-                <span>↗</span>
+                <ActionArrow />
               </button>
             </form>
           )}

@@ -22,6 +22,8 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 90px;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -2297,7 +2299,8 @@ button:disabled {
   outline: none;
   background: transparent;
   color: #fff;
-  font-size: 0.83rem;
+  font-size: 1rem;
+  touch-action: manipulation;
 }
 
 .menu-search input::placeholder {
@@ -3480,6 +3483,14 @@ body.nav-open {
 
 .nav-account--signed-in > span {
   background: linear-gradient(135deg, #c98291, #dfad88);
+}
+
+.nav-account--signed-in .nav-account__icon {
+  overflow: hidden;
+  font-family: var(--sans);
+  font-size: 0.9rem !important;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .nav-account small,
@@ -5056,5 +5067,85 @@ body.nav-open {
 
   .menu-tabs button {
     scroll-snap-align: center;
+  }
+}
+
+/* Consistent, lightweight action icons */
+.action-arrow {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  overflow: visible;
+  color: currentColor;
+  transition: transform 180ms ease;
+}
+
+.action-arrow circle {
+  fill: currentColor;
+  opacity: 0.09;
+  stroke: currentColor;
+  stroke-width: 1;
+}
+
+.action-arrow path {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.55;
+}
+
+button:hover .action-arrow--up-right,
+a:hover .action-arrow--up-right {
+  transform: translate(2px, -2px);
+}
+
+button:hover .action-arrow--right,
+a:hover .action-arrow--right {
+  transform: translateX(3px);
+}
+
+button:hover .action-arrow--down {
+  transform: translateY(3px);
+}
+
+a:hover .action-arrow--up {
+  transform: translateY(-3px);
+}
+
+.footer__links a,
+.footer__bottom a,
+.gallery-item > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.footer__links .action-arrow,
+.footer__bottom .action-arrow,
+.gallery-item .action-arrow,
+.menu-card__reveal .action-arrow,
+.sage-chat__booking-strip .action-arrow {
+  width: 20px;
+  height: 20px;
+}
+
+.testimonial-controls .action-arrow {
+  width: 30px;
+  height: 30px;
+}
+
+.sage-chat__composer .action-arrow {
+  width: 22px;
+  height: 22px;
+}
+
+.sage-chat__composer .action-arrow circle {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action-arrow {
+    transition: none;
   }
 }

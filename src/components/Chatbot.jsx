@@ -4,6 +4,7 @@ import {
   QUICK_CHAT_SUGGESTIONS,
   CHATBOT_FORMAL_FALLBACK,
 } from "../utils/chatbot";
+import ActionArrow from "./ActionArrow";
 
 const STORAGE_KEY = "saffron-sage-chat-v1";
 const WELCOME_MESSAGE = {
@@ -196,7 +197,7 @@ export default function Chatbot({ onBook }) {
               <span>READY TO BOOK?</span>
               <strong>Choose a date and reserve your table</strong>
             </div>
-            <button onClick={openBooking}>Book ↗</button>
+            <button onClick={openBooking}>Book <ActionArrow /></button>
           </div>
 
           <form className="sage-chat__composer" onSubmit={submit}>
@@ -216,7 +217,7 @@ export default function Chatbot({ onBook }) {
               rows="1"
               disabled={sending}
             />
-            <button type="submit" disabled={sending || !input.trim()} aria-label="Send message">↗</button>
+            <button type="submit" disabled={sending || !input.trim()} aria-label="Send message"><ActionArrow direction="right" /></button>
           </form>
           <footer className="sage-chat__footer">
             <span>{notice || "Please confirm serious allergies and booking details with our team."}</span>
