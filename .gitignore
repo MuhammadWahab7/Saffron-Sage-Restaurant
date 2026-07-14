@@ -1,0 +1,21 @@
+node_modules/
+dist/
+.netlify/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+.agents/
+.codex/
+
+# Local one-click helper scripts
+DO_EVERYTHING_FOR_ME.bat
+RUN_WEBSITE_LOCALLY.bat
+READ_THIS_FIRST.txt
+
+# Local handoff and troubleshooting notes
+CHATBOT_FIXES.md
+GENERAL_ASSISTANT_UPDATE.md
+NEXT_STEPS_SIMPLE.md
+RECOMMENDATION_FIX.md
