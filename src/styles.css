@@ -37,7 +37,8 @@ body {
 body,
 button,
 input,
-select {
+select,
+textarea {
   font-family: var(--sans);
 }
 
@@ -650,12 +651,16 @@ button {
 }
 
 .event-row {
+  position: relative;
   display: grid;
+  width: 100%;
   min-height: 150px;
   align-items: center;
   border-top: 1px solid var(--line);
-  grid-template-columns: 55px 105px 1fr 120px 50px;
+  grid-template-columns: 55px 105px 1fr 120px;
   gap: 25px;
+  color: inherit;
+  text-align: left;
   transition: padding 220ms ease, background 220ms ease;
 }
 
@@ -713,20 +718,17 @@ button {
   font-size: 0.84rem;
 }
 
-.event-row > button {
-  display: grid;
-  width: 45px;
-  height: 45px;
-  place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+.event-row__action {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  border-radius: inherit;
 }
 
-.event-row > button:hover {
-  background: var(--ink);
-  color: #fff;
-  transform: rotate(45deg);
+.event-row__action:focus-visible {
+  outline: 3px solid rgba(185, 111, 126, 0.48);
+  outline-offset: 3px;
 }
 
 .gallery {
@@ -1279,7 +1281,7 @@ button {
   }
 
   .event-row {
-    grid-template-columns: 35px 90px 1fr 80px 42px;
+    grid-template-columns: 35px 90px 1fr 80px;
     gap: 15px;
   }
 
@@ -1536,12 +1538,6 @@ button {
 
   .event-row__body {
     grid-column: 2;
-  }
-
-  .event-row > button {
-    position: absolute;
-    right: 0;
-    bottom: 20px;
   }
 
   .gallery-grid {
@@ -2061,15 +2057,6 @@ body {
   border-radius: 50%;
   background: linear-gradient(145deg, #fff7f3, #f2dfd8);
   color: var(--ink);
-}
-
-.event-row > button {
-  border-color: rgba(185, 111, 126, 0.24);
-  color: var(--rose);
-}
-
-.event-row > button:hover {
-  background: linear-gradient(135deg, var(--rose), var(--copper));
 }
 
 .gallery {
@@ -3456,7 +3443,10 @@ body.nav-open {
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 999px;
   color: #fff;
+  font-family: var(--sans);
+  letter-spacing: normal;
   text-align: left;
+  text-transform: none;
   transition: background 180ms ease, border-color 180ms ease;
 }
 
@@ -3474,6 +3464,18 @@ body.nav-open {
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.13);
   font-family: var(--serif);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.nav-account__icon svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
 }
 
 .nav-account--signed-in > span {
@@ -4951,21 +4953,44 @@ body.nav-open {
   }
 
   .navbar--menu-open .nav-account {
+    display: grid;
     width: 100%;
     max-width: none;
+    min-height: 72px;
     margin: 22px 0 10px;
-    padding: 13px 15px;
+    padding: 12px 16px;
     border-color: rgba(255, 255, 255, 0.2);
     background: rgba(255, 255, 255, 0.07);
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .navbar--menu-open .nav-account > span {
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .navbar--menu-open .nav-account__icon svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .navbar--menu-open .nav-account small,
+  .navbar--menu-open .nav-account strong {
+    max-width: none;
   }
 
   .navbar--menu-open .nav-account small {
     color: rgba(255, 255, 255, 0.58);
+    font-size: 0.56rem;
+    letter-spacing: 0.11em;
   }
 
   .navbar--menu-open .nav-account strong {
     color: #fff;
-    font-size: 0.76rem;
+    font-size: 0.95rem;
+    line-height: 1.35;
   }
 
   .navbar--menu-open .nav-book {
@@ -4998,5 +5023,38 @@ body.nav-open {
   .navbar--menu-open .nav-links > button:not(.button):not(.nav-account) {
     padding: 9px 0;
     font-size: clamp(1.9rem, 10vw, 2.8rem);
+  }
+}
+
+/* Mobile interaction safeguards */
+@media (max-width: 1040px) {
+  input:not([type="hidden"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+.favourites-filter:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+}
+
+@media (max-width: 620px) {
+  .menu-tabs {
+    scrollbar-width: none;
+    scroll-padding-inline: 8px;
+    scroll-snap-type: x proximity;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .menu-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .menu-tabs button {
+    scroll-snap-align: center;
   }
 }

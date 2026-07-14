@@ -78,11 +78,21 @@ export default function Navbar({ onBook, onAccount, user, authLoading }) {
             onAccount();
           }}
           disabled={authLoading}
+          aria-label={user ? "Open my reservations" : "Sign in or log in"}
         >
-          <span>{user ? getUserDisplayName(user).charAt(0).toUpperCase() : "♙"}</span>
+          <span className="nav-account__icon" aria-hidden="true">
+            {user ? (
+              getUserDisplayName(user).charAt(0).toUpperCase()
+            ) : (
+              <svg viewBox="0 0 24 24" focusable="false">
+                <circle cx="12" cy="8" r="3.5" />
+                <path d="M5.5 19c.7-4 3-6 6.5-6s5.8 2 6.5 6" />
+              </svg>
+            )}
+          </span>
           <div>
-            <small>{user ? "My reservations" : "Guest account"}</small>
-            <strong>{authLoading ? "Loading..." : user ? getUserDisplayName(user) : "Sign in"}</strong>
+            <small>{user ? "My reservations" : "Customer account"}</small>
+            <strong>{authLoading ? "Loading account..." : user ? getUserDisplayName(user) : "Sign in / Log in"}</strong>
           </div>
         </button>
 

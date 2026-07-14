@@ -12,7 +12,7 @@ export default function Events({ onBook }) {
             text="Join us for live music, special menus and family meals throughout the season."
           />
           <button className="text-button text-button--dark" onClick={onBook}>
-            Ask about an event <span>↗</span>
+            Ask about an event
           </button>
         </div>
 
@@ -29,9 +29,12 @@ export default function Events({ onBook }) {
                 <p>{event.text}</p>
               </div>
               <span className="event-row__time">{event.time}</span>
-              <button onClick={onBook} aria-label={`Book ${event.title}`}>
-                ↗
-              </button>
+              <button
+                type="button"
+                className="event-row__action"
+                onClick={onBook}
+                aria-label={`Book a table for ${event.title}`}
+              />
             </article>
           ))}
         </div>
