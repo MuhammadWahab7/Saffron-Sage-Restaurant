@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { menuItems } from "../data";
 import SectionHeading from "./SectionHeading";
 import MenuDetailModal from "./MenuDetailModal";
@@ -6,6 +6,8 @@ import MenuDetailModal from "./MenuDetailModal";
 const categories = ["All", "Starters", "Mains", "Desserts", "Drinks"];
 
 export default function Menu({ onReserve }) {
+  const tabsRef = useRef(null);
+  const categoryButtonRefs = useRef({});
   const [activeCategory, setActiveCategory] = useState("All");
   const [search, setSearch] = useState("");
   const [selectedItem, setSelectedItem] = useState(null);
@@ -21,6 +23,27 @@ export default function Menu({ onReserve }) {
   useEffect(() => {
     localStorage.setItem("saffron-sage-favourites", JSON.stringify(favourites));
   }, [favourites]);
+
+  useEffect(() => {
+    if (favourites.length === 0 && favouritesOnly) setFavouritesOnly(false);
+  }, [favourites, favouritesOnly]);
+
+  useEffect(() => {
+    const tabs = tabsRef.current;
+    const activeButton = categoryButtonRefs.current[activeCategory];
+    if (!tabs || !activeButton || tabs.scrollWidth <= tabs.clientWidth) return;
+
+    const centeredPosition =
+      activeButton.offsetLeft - (tabs.clientWidth - activeButton.offsetWidth) / 2;
+    const maximumScroll = tabs.scrollWidth - tabs.clientWidth;
+
+    tabs.scrollTo({
+      left: Math.max(0, Math.min(centeredPosition, maximumScroll)),
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto"
+        : "smooth",
+    });
+  }, [activeCategory]);
 
   const visibleItems = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -62,15 +85,21 @@ export default function Menu({ onReserve }) {
           <label className="menu-search">
             <span>⌕</span>
             <input
+              type="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search dishes or ingredients..."
               aria-label="Search menu"
+              autoComplete="off"
+              spellCheck="false"
             />
           </label>
           <button
             className={`favourites-filter ${favouritesOnly ? "is-active" : ""}`}
             onClick={() => setFavouritesOnly((current) => !current)}
+            disabled={favourites.length === 0}
+            aria-pressed={favouritesOnly}
+            title={favourites.length === 0 ? "Add a dish to favourites to use this filter" : undefined}
           >
             <span>{favouritesOnly ? "♥" : "♡"}</span>
             Favourites
@@ -78,10 +107,14 @@ export default function Menu({ onReserve }) {
           </button>
         </div>
 
-        <div className="menu-tabs" role="tablist" aria-label="Menu categories">
+        <div ref={tabsRef} className="menu-tabs" role="tablist" aria-label="Menu categories">
           {categories.map((category) => (
             <button
               key={category}
+              ref={(node) => {
+                categoryButtonRefs.current[category] = node;
+              }}
+              type="button"
               className={activeCategory === category ? "active" : ""}
               onClick={() => setActiveCategory(category)}
               role="tab"

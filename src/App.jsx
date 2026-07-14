@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import Story from "./components/Story";
@@ -16,12 +16,18 @@ import Chatbot from "./components/Chatbot";
 import { useAuth } from "./context/AuthContext";
 
 export default function App() {
-  const { user, loading } = useAuth();
+  const { user, loading, passwordRecovery } = useAuth();
   const [bookingOpen, setBookingOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [reservationsOpen, setReservationsOpen] = useState(false);
   const [preferredDish, setPreferredDish] = useState("");
   const [pendingBooking, setPendingBooking] = useState(null);
+
+  useEffect(() => {
+    if (!passwordRecovery) return;
+    setPendingBooking(null);
+    setAuthOpen(true);
+  }, [passwordRecovery]);
 
   const openBooking = useCallback(
     (dish = "") => {
