@@ -10,41 +10,6 @@
     <title>Saffron & Sage | Garden Kitchen</title>
   </head>
   <body>
-    <!--
-      Netlify parses these hidden static forms after the Vite build.
-      Their field names must match every field submitted by the React forms.
-    -->
-    <form name="restaurant-booking" method="POST" data-netlify="true" netlify-honeypot="bot-field" hidden>
-      <input type="hidden" name="form-name" value="restaurant-booking" />
-      <input name="bot-field" />
-      <input name="submissionType" />
-      <input name="userId" />
-      <input name="bookingId" />
-      <input name="bookingStatus" />
-      <input name="authMode" />
-      <input name="name" />
-      <input type="email" name="email" />
-      <input name="phone" />
-      <input name="date" />
-      <input name="time" />
-      <input name="guests" />
-      <input name="occasion" />
-      <input name="preferredDish" />
-      <input name="seatingPreference" />
-      <textarea name="specialRequests"></textarea>
-    </form>
-
-    <form name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" hidden>
-      <input type="hidden" name="form-name" value="contact" />
-      <input name="bot-field" />
-      <input name="submissionType" />
-      <input name="name" />
-      <input type="email" name="email" />
-      <input name="phone" />
-      <input name="topic" />
-      <textarea name="message"></textarea>
-    </form>
-
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

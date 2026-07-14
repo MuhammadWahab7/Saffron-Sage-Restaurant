@@ -1,5 +1,6 @@
 import { useState } from "react";
 import SectionHeading from "./SectionHeading";
+import ActionArrow from "./ActionArrow";
 import { submitNetlifyForm } from "../utils/forms";
 
 const initialForm = {
@@ -106,7 +107,7 @@ export default function ContactForm() {
               {status === "error" && <p className="form-error" role="alert">{error}</p>}
 
               <button className="button button--full" type="submit" disabled={status === "sending"}>
-                {status === "sending" ? "Sending..." : "Send your message"} <span>↗</span>
+                {status === "sending" ? "Sending..." : "Send your message"} <ActionArrow />
               </button>
               <small className="form-footnote">We will only use your details to reply to this message.</small>
             </form>

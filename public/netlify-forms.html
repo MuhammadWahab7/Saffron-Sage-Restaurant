@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="robots" content="noindex" />
+    <title>Saffron &amp; Sage form definitions</title>
+  </head>
+  <body>
+    <!--
+      Static form blueprints for Netlify's deploy-time parser.
+      Keep these field names aligned with the React forms and AJAX payloads.
+    -->
+    <form
+      name="restaurant-booking"
+      method="POST"
+      action="/"
+      data-netlify="true"
+      netlify-honeypot="bot-field"
+      hidden
+    >
+      <input type="hidden" name="form-name" value="restaurant-booking" />
+      <input name="bot-field" />
+      <input type="hidden" name="submissionType" />
+      <input type="hidden" name="userId" />
+      <input type="hidden" name="bookingId" />
+      <input type="hidden" name="bookingStatus" />
+      <input type="hidden" name="authMode" />
+      <input name="name" />
+      <input type="email" name="email" />
+      <input type="tel" name="phone" />
+      <input type="date" name="date" />
+      <input name="time" />
+      <input type="number" name="guests" />
+      <input name="occasion" />
+      <input name="preferredDish" />
+      <input name="seatingPreference" />
+      <textarea name="specialRequests"></textarea>
+    </form>
+
+    <form
+      name="contact"
+      method="POST"
+      action="/"
+      data-netlify="true"
+      netlify-honeypot="bot-field"
+      hidden
+    >
+      <input type="hidden" name="form-name" value="contact" />
+      <input name="bot-field" />
+      <input type="hidden" name="submissionType" />
+      <input name="name" />
+      <input type="email" name="email" />
+      <input type="tel" name="phone" />
+      <input name="topic" />
+      <textarea name="message"></textarea>
+    </form>
+  </body>
+</html>

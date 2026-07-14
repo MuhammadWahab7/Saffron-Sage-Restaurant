@@ -86,6 +86,10 @@ declare
   v_user_email text := auth.jwt() ->> 'email';
   v_booked integer;
   v_reservation_id uuid;
+  v_restaurant_now timestamp without time zone := statement_timestamp() at time zone 'Europe/London';
+  v_booking_at timestamptz;
+  v_day_of_week integer;
+  v_kitchen_closes time without time zone;
 begin
   if v_user_id is null then
     raise exception 'You must be signed in to reserve a table.';
@@ -95,8 +99,42 @@ begin
     raise exception 'Choose a valid reservation date and time.';
   end if;
 
-  if p_date < current_date then
+  if p_date < v_restaurant_now::date then
     raise exception 'Reservations cannot be made in the past.';
+  end if;
+
+  v_day_of_week := extract(isodow from p_date)::integer;
+
+  if v_day_of_week = 1 then
+    raise exception 'Saffron & Sage is closed on Mondays. Please choose Tuesday to Sunday.';
+  end if;
+
+  v_kitchen_closes := case
+    when v_day_of_week between 2 and 4 then time '21:30'
+    when v_day_of_week in (5, 6) then time '22:30'
+    when v_day_of_week = 7 then time '19:30'
+  end;
+
+  if p_time < time '12:00' or p_time > v_kitchen_closes then
+    raise exception
+      'Choose a dining time between 12:00 and %. The kitchen closes 30 minutes before the restaurant.',
+      to_char(v_kitchen_closes, 'HH24:MI');
+  end if;
+
+  if p_time not in (
+    time '12:00',
+    time '13:30',
+    time '18:00',
+    time '19:00',
+    time '20:30'
+  ) then
+    raise exception 'Choose one of the available reservation times: 12:00, 13:30, 18:00, 19:00, or 20:30.';
+  end if;
+
+  v_booking_at := (p_date + p_time) at time zone 'Europe/London';
+
+  if v_booking_at < statement_timestamp() + interval '60 minutes' then
+    raise exception 'Reservations require at least 60 minutes'' notice in the restaurant''s local time.';
   end if;
 
   if p_guests is null or p_guests < 1 or p_guests > 8 then
@@ -105,6 +143,10 @@ begin
 
   if length(trim(coalesce(p_guest_name, ''))) < 2 then
     raise exception 'Enter a valid guest name.';
+  end if;
+
+  if nullif(trim(coalesce(p_phone, '')), '') is null then
+    raise exception 'Enter a contact phone number.';
   end if;
 
   -- Serializes reservations for the same date/time inside the transaction.
@@ -198,6 +240,13 @@ $$;
 revoke all on function public.get_slot_availability(date, time without time zone) from public;
 revoke all on function public.create_restaurant_reservation(text, text, date, time without time zone, integer, text, text, text, text) from public;
 revoke all on function public.cancel_my_reservation(uuid) from public;
+
+-- Supabase may retain explicit grants to the API's anonymous role from an
+-- earlier function deployment. Revoke those separately from PostgreSQL's
+-- generic PUBLIC role so only signed-in guests can use reservation RPCs.
+revoke all on function public.get_slot_availability(date, time without time zone) from anon;
+revoke all on function public.create_restaurant_reservation(text, text, date, time without time zone, integer, text, text, text, text) from anon;
+revoke all on function public.cancel_my_reservation(uuid) from anon;
 
 grant execute on function public.get_slot_availability(date, time without time zone) to authenticated;
 grant execute on function public.create_restaurant_reservation(text, text, date, time without time zone, integer, text, text, text, text) to authenticated;

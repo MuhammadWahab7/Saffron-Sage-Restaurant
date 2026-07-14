@@ -6,13 +6,134 @@ import {
   SLOT_CAPACITY,
 } from "../services/reservations";
 import { submitNetlifyForm } from "../utils/forms";
+import ActionArrow from "./ActionArrow";
+
+const RESTAURANT_TIME_ZONE = "Europe/London";
+const BOOKING_LEAD_MINUTES = 60;
+const OPENING_MINUTES = 12 * 60;
+const DINING_SLOTS = [
+  { value: "12:00", label: "12:00, Lunch" },
+  { value: "13:30", label: "13:30, Lunch" },
+  { value: "18:00", label: "18:00, Early dinner" },
+  { value: "19:00", label: "19:00, Dinner" },
+  { value: "20:30", label: "20:30, Late dinner" },
+];
+
+const restaurantClockFormatter = new Intl.DateTimeFormat("en-GB", {
+  timeZone: RESTAURANT_TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+
+const getRestaurantClock = (date) => {
+  const parts = Object.fromEntries(
+    restaurantClockFormatter
+      .formatToParts(date)
+      .filter(({ type }) => type !== "literal")
+      .map(({ type, value }) => [type, value]),
+  );
+
+  return {
+    date: `${parts.year}-${parts.month}-${parts.day}`,
+    minutes: (Number(parts.hour) % 24) * 60 + Number(parts.minute),
+  };
+};
+
+const getDayOfWeek = (isoDate) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return Number.NaN;
+  return new Date(`${isoDate}T12:00:00Z`).getUTCDay();
+};
+
+const getTimeMinutes = (time) => {
+  if (!/^\d{2}:\d{2}$/.test(time)) return Number.NaN;
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
+};
+
+const getKitchenClosingMinutes = (dayOfWeek) => {
+  if (dayOfWeek === 0) return 19 * 60 + 30;
+  if (dayOfWeek === 5 || dayOfWeek === 6) return 22 * 60 + 30;
+  if (dayOfWeek >= 2 && dayOfWeek <= 4) return 21 * 60 + 30;
+  return null;
+};
+
+const getScheduledSlots = (date) => {
+  const kitchenCloses = getKitchenClosingMinutes(getDayOfWeek(date));
+  if (kitchenCloses === null) return [];
+
+  return DINING_SLOTS.filter(({ value }) => {
+    const slotMinutes = getTimeMinutes(value);
+    return slotMinutes >= OPENING_MINUTES && slotMinutes <= kitchenCloses;
+  });
+};
+
+const getAvailableSlots = (date, now = new Date()) => {
+  if (!date) return [];
+
+  const cutoffInstant = new Date(now.getTime() + BOOKING_LEAD_MINUTES * 60 * 1000);
+  const cutoff = getRestaurantClock(cutoffInstant);
+  const cutoffMinutes = cutoff.minutes + (
+    cutoffInstant.getUTCSeconds() > 0 || cutoffInstant.getUTCMilliseconds() > 0 ? 1 : 0
+  );
+
+  return getScheduledSlots(date).filter(({ value }) => (
+    date > cutoff.date
+    || (date === cutoff.date && getTimeMinutes(value) >= cutoffMinutes)
+  ));
+};
+
+const validateBookingSelection = (date, time, now = new Date()) => {
+  if (!date) return { valid: false, message: "Choose a reservation date." };
+
+  const restaurantToday = getRestaurantClock(now).date;
+  if (date < restaurantToday) {
+    return { valid: false, message: "Reservations cannot be made in the past." };
+  }
+
+  if (getDayOfWeek(date) === 1) {
+    return {
+      valid: false,
+      message: "Saffron & Sage is closed on Mondays. Please choose Tuesday to Sunday.",
+    };
+  }
+
+  if (!time) {
+    const hasAvailableSlots = getAvailableSlots(date, now).length > 0;
+    return {
+      valid: false,
+      message: hasAvailableSlots
+        ? "Choose an available dining time."
+        : "No reservation times remain for that date. Please choose another day.",
+    };
+  }
+
+  if (!getScheduledSlots(date).some((slot) => slot.value === time)) {
+    return {
+      valid: false,
+      message: "That time is outside the restaurant's booking hours. Please choose an available time.",
+    };
+  }
+
+  if (!getAvailableSlots(date, now).some((slot) => slot.value === time)) {
+    return {
+      valid: false,
+      message: "Reservations require at least 60 minutes' notice. Please choose a later time.",
+    };
+  }
+
+  return { valid: true, message: "" };
+};
 
 const createInitialForm = (user, preferredDish = "") => ({
   name: getUserDisplayName(user),
   email: user?.email || "",
   phone: "",
   date: "",
-  time: "19:00",
+  time: "",
   guests: "2",
   occasion: "Casual dining",
   preferredDish,
@@ -35,6 +156,7 @@ export default function BookingModal({
   const [error, setError] = useState("");
   const [emailWarning, setEmailWarning] = useState("");
   const [reservation, setReservation] = useState(null);
+  const [bookingNow, setBookingNow] = useState(() => new Date());
   const [availability, setAvailability] = useState({
     status: "idle",
     capacity: SLOT_CAPACITY,
@@ -50,6 +172,7 @@ export default function BookingModal({
     setError("");
     setEmailWarning("");
     setReservation(null);
+    setBookingNow(new Date());
     setAvailability({
       status: "idle",
       capacity: SLOT_CAPACITY,
@@ -70,7 +193,37 @@ export default function BookingModal({
   }, [open, onClose, preferredDish, user]);
 
   useEffect(() => {
-    if (!open || !form.date || !form.time) return undefined;
+    if (!open) return undefined;
+
+    const timer = window.setInterval(() => setBookingNow(new Date()), 30_000);
+    return () => window.clearInterval(timer);
+  }, [open]);
+
+  const availableTimeSlots = useMemo(
+    () => getAvailableSlots(form.date, bookingNow),
+    [form.date, bookingNow],
+  );
+  const selectionValidation = useMemo(
+    () => validateBookingSelection(form.date, form.time, bookingNow),
+    [form.date, form.time, bookingNow],
+  );
+
+  useEffect(() => {
+    if (!open || !form.date || !form.time || selectionValidation.valid) return;
+
+    setForm((current) => ({ ...current, time: "" }));
+    setAvailability({
+      status: "idle",
+      capacity: SLOT_CAPACITY,
+      booked: 0,
+      remaining: SLOT_CAPACITY,
+    });
+    setError(selectionValidation.message);
+    setStatus("error");
+  }, [open, form.date, form.time, selectionValidation]);
+
+  useEffect(() => {
+    if (!open || !selectionValidation.valid) return undefined;
 
     let active = true;
     const timer = window.setTimeout(async () => {
@@ -93,7 +246,7 @@ export default function BookingModal({
       active = false;
       window.clearTimeout(timer);
     };
-  }, [open, form.date, form.time]);
+  }, [open, form.date, form.time, selectionValidation.valid]);
 
   const requestedGuests = Number(form.guests);
   const insufficientSeats =
@@ -108,10 +261,63 @@ export default function BookingModal({
 
   const updateField = (event) => {
     setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
+    if (event.target.name === "time") {
+      setError("");
+      setStatus("idle");
+      setAvailability({
+        status: "idle",
+        capacity: SLOT_CAPACITY,
+        booked: 0,
+        remaining: SLOT_CAPACITY,
+      });
+    }
+  };
+
+  const updateDate = (event) => {
+    const date = event.target.value;
+    const dateValidation = validateBookingSelection(date, "", new Date());
+
+    if (getDayOfWeek(date) === 1 || date < getRestaurantClock(new Date()).date) {
+      setForm((current) => ({ ...current, date: "", time: "" }));
+    } else {
+      const slots = getAvailableSlots(date, new Date());
+      setForm((current) => ({
+        ...current,
+        date,
+        time: slots.some((slot) => slot.value === current.time) ? current.time : "",
+      }));
+    }
+
+    setAvailability({
+      status: "idle",
+      capacity: SLOT_CAPACITY,
+      booked: 0,
+      remaining: SLOT_CAPACITY,
+    });
+
+    if (!dateValidation.valid && dateValidation.message !== "Choose an available dining time.") {
+      setError(dateValidation.message);
+      setStatus("error");
+    } else {
+      setError("");
+      setStatus("idle");
+    }
   };
 
   const submitForm = async (event) => {
     event.preventDefault();
+    const latestSelectionValidation = validateBookingSelection(
+      form.date,
+      form.time,
+      new Date(),
+    );
+
+    if (!latestSelectionValidation.valid) {
+      setError(latestSelectionValidation.message);
+      setStatus("error");
+      return;
+    }
+
     setStatus("sending");
     setError("");
     setEmailWarning("");
@@ -221,19 +427,27 @@ export default function BookingModal({
               <label>Phone number<input type="tel" name="phone" value={form.phone} onChange={updateField} placeholder="Contact number" required /></label>
 
               <div className="form-row">
-                <label>Date<input type="date" name="date" value={form.date} onChange={updateField} min={new Date().toISOString().split("T")[0]} required /></label>
+                <label>Date<input type="date" name="date" value={form.date} onChange={updateDate} min={getRestaurantClock(bookingNow).date} required /></label>
                 <label>Time
-                  <select name="time" value={form.time} onChange={updateField}>
-                    <option value="12:00">12:00, Lunch</option>
-                    <option value="13:30">13:30, Lunch</option>
-                    <option value="18:00">18:00, Early dinner</option>
-                    <option value="19:00">19:00, Dinner</option>
-                    <option value="20:30">20:30, Late dinner</option>
+                  <select name="time" value={form.time} onChange={updateField} disabled={!form.date || availableTimeSlots.length === 0} required>
+                    <option value="">
+                      {!form.date
+                        ? "Choose a date first"
+                        : availableTimeSlots.length === 0
+                          ? "No times available"
+                          : "Choose a dining time"}
+                    </option>
+                    {availableTimeSlots.map((slot) => (
+                      <option key={slot.value} value={slot.value}>{slot.label}</option>
+                    ))}
                   </select>
                 </label>
               </div>
+              <small className="booking-security-note">
+                Times are shown in London time. Closed Monday; please book at least 60 minutes ahead.
+              </small>
 
-              {form.date && (
+              {form.date && form.time && (
                 <div className={`seat-availability seat-availability--${availability.status}`} aria-live="polite">
                   <div className="seat-availability__top">
                     <div>
@@ -282,8 +496,8 @@ export default function BookingModal({
 
               {status === "error" && <p className="form-error" role="alert">{error}</p>}
 
-              <button className="button button--full" type="submit" disabled={status === "sending" || insufficientSeats || availability.status === "loading"}>
-                {status === "sending" ? "Saving your booking..." : "Confirm reservation"} <span>↗</span>
+              <button className="button button--full" type="submit" disabled={status === "sending" || !selectionValidation.valid || insufficientSeats || availability.status === "loading"}>
+                {status === "sending" ? "Saving your booking..." : "Confirm reservation"} <ActionArrow />
               </button>
               <small className="booking-security-note">This booking will be saved to {user.email}.</small>
             </form>
